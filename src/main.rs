@@ -24,7 +24,6 @@ fn run() {
         frame_counter += SKIP;
         if now.duration_since(start).as_millis() < frame_counter {
             sleep(Duration::new(0, (SKIP * 1000000).try_into().unwrap()));
-            println!("sleep");
         }
     }
 }
@@ -46,22 +45,51 @@ fn update_game(previous_state: u32, last_pressed: Vec<Keycode>) -> u32 {
 
 fn display_game(pos : u32) {
     clear_screen();
-    print_border(true, 1, true);
-    print_body(pos);
-    print_border(true,1,false);
+    print_grid();
+    // print_border(true, 1, true);
+    // print_body(pos);
+    // print_border(true,1,false);
 }
-
+#[derive(Debug)]
+enum CoordState {
+    Empty,
+    SnekHead,
+    SnekBody,
+    Mouse,
+}
+#[derive(Debug)]
 struct Coords {
     x: u32,
     y: u32
 }
 
-impl Coords {
-    fn change (&mut self, x_delta: u32, y_delta: u32) {
-        self.x += x_delta;
-        self.y += y_delta;
+struct Row {
+    data: Vec<CoordState>
+}
+
+impl Row {
+    fn display(&self) {
+        let mut array_to_print = Vec::<&str>::new();
+
+        for n in 0..self.data.len() {
+            let coord_value = match self.data[n] {
+                CoordState::Empty => " ",
+                CoordState::Mouse => "M",
+                CoordState::SnekBody => "*",
+                CoordState::SnekHead => "S",
+            };
+            array_to_print.push(coord_value);
+        }
+        println!("|{:?}|",array_to_print.join(""));
     }
 }
+
+struct Grid {
+    width: u32,
+    height: u32,
+    rows: Vec<Row>
+}
+
 
 enum KinkDirection {
     Left,
@@ -72,6 +100,36 @@ struct Snek {
     head_position: Coords,
     length: u32,
     kinks: Vec<KinkDirection>
+}
+
+struct Mice {
+    population: u32,
+    positions: Vec<Coords>
+}
+
+impl Mice {
+    fn birth (&mut self, pos: Coords) {
+        self.population += 1;
+        self.positions.push(pos)
+    }
+    fn death (&mut self) {
+        self.population -= 1;
+        self.positions.pop();
+    }
+}
+
+struct GameState {
+    snek: Snek,
+    score: u32,
+    mice: Mice
+}
+
+// TODO: display the empty grid
+
+fn print_grid() {
+    let row = Row { data: vec![CoordState::Empty,CoordState::Empty,CoordState::Empty,CoordState::Empty,CoordState::Empty,CoordState::SnekHead,CoordState::Empty,CoordState::Empty,CoordState::Empty,CoordState::Empty,CoordState::Empty] };
+
+    row.display();
 }
 
 

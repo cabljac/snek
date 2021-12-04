@@ -51,6 +51,31 @@ fn display_game(pos : u32) {
     print_border(true,1,false);
 }
 
+struct Coords {
+    x: u32,
+    y: u32
+}
+
+impl Coords {
+    fn change (&mut self, x_delta: u32, y_delta: u32) {
+        self.x += x_delta;
+        self.y += y_delta;
+    }
+}
+
+enum KinkDirection {
+    Left,
+    Right
+} 
+
+struct Snek {
+    head_position: Coords,
+    length: u32,
+    kinks: Vec<KinkDirection>
+}
+
+
+
 fn clear_screen() {
     print!("\x1B[2J\x1B[1;1H");
 }

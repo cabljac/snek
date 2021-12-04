@@ -64,23 +64,48 @@ struct Coords {
 }
 
 struct Row {
-    data: Vec<CoordState>
+    length : u32,
+    has_snek_head: bool,
+    has_mice: bool,
+    snek_head_position: u32,
+    mice_positions: Vec<u32>
 }
 
-impl Row {
-    fn display(&self) {
-        let mut array_to_print = Vec::<&str>::new();
+type RowState = Vec<CoordState>;
 
-        for n in 0..self.data.len() {
-            let coord_value = match self.data[n] {
+// TODO 1. fix ownership and types and lifetime of Row:
+
+impl Row {
+    fn build_state(&self) -> RowState {
+        let mut state = RowState::new();
+        let mut coord_value : CoordState = CoordState::Empty;
+        for n in 0..self.length {
+            if self.has_mice {
+                if self.mice_positions.contains(&n) {
+                    coord_value = CoordState::Mouse
+                }
+            }
+            if self.has_snek_head {
+                if n == self.snek_head_position {
+                    coord_value = CoordState::SnekHead
+                }
+            }
+            state.push(coord_value);
+        }
+        state
+    }
+    fn display(&self) {
+        let state = self.build_state();
+        let to_print = state.iter().map(|s| {
+            match s {
                 CoordState::Empty => " ",
                 CoordState::Mouse => "M",
                 CoordState::SnekBody => "*",
                 CoordState::SnekHead => "S",
-            };
-            array_to_print.push(coord_value);
+            }
         }
-        println!("|{:?}|",array_to_print.join(""));
+        ).collect().join("");
+        println!("{:#?}",to_print);
     }
 }
 
@@ -124,10 +149,22 @@ struct GameState {
     mice: Mice
 }
 
-// TODO: display the empty grid
+// TODO 2: display rows
+// TODO 3: handle user input for stop/start game
+// TODO 4: handle user input for moving snake head about
+// 5: handle snake eating mouse
+// 6: handle score
+// 7: handle snake getting longer
+// For snake body could just remember history of where snake has been (prev user inputs) - would make snake death easier to handle? not sure
 
 fn print_grid() {
-    let row = Row { data: vec![CoordState::Empty,CoordState::Empty,CoordState::Empty,CoordState::Empty,CoordState::Empty,CoordState::SnekHead,CoordState::Empty,CoordState::Empty,CoordState::Empty,CoordState::Empty,CoordState::Empty] };
+    let row = Row {
+        length: 10,
+        has_snek_head: false,
+        has_mice: false,
+        snek_head_position: 0,
+        mice_positions: vec![0]
+    };
 
     row.display();
 }
